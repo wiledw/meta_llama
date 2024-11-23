@@ -70,6 +70,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_REDIRECT_URL}`,
       queryParams: {
         access_type: "offline",
         prompt: "consent",
