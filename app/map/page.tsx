@@ -6,7 +6,7 @@ import {
   Marker,
   InfoWindow,
 } from "@react-google-maps/api";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import StarRating from "../../components/ui/StarRating";
 
 type Location = {
@@ -20,11 +20,6 @@ type Location = {
 const mapContainerStyle = {
   width: "100%",
   height: "700px",
-};
-
-const center = {
-  lat: 40.7128,
-  lng: -74.006,
 };
 
 const locations: Location[] = [
@@ -49,14 +44,53 @@ const locations: Location[] = [
     longitude: -73.9969,
     rating: 4.7,
   },
+  {
+    id: 4,
+    name: "Empire State Building",
+    latitude: 40.748817,
+    longitude: -73.985428,
+    rating: 4.8,
+  },
+  {
+    id: 5,
+    name: "Brooklyn Botanic Garden",
+    latitude: 40.6694,
+    longitude: -73.9624,
+    rating: 4.7,
+  },
 ];
 
 // Simplified teardrop shape
 const customPinPath = "M0,-48 C12,-48 12,-24 0,0 C-12,-24 -12,-48 0,-48 Z";
 
 export default function MapsPage() {
+  const [center, setCenter] = useState({ lat: 0, lng: 0 }); // Initial center
+  const [zoom, setZoom] = useState(12); // Initial zoom level
+  const mapRef = useRef<google.maps.Map | null>(null);
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const [hoveredLocation, setHoveredLocation] = useState<Location | null>(null);
+
+  const onMapLoad = (map: google.maps.Map) => {
+    mapRef.current = map; // Store the map instance
+
+    const bounds = new google.maps.LatLngBounds();
+
+    // Extend bounds to include all locations
+    locations.forEach((location) => {
+      bounds.extend(
+        new google.maps.LatLng(location.latitude, location.longitude)
+      );
+    });
+
+    map.fitBounds(bounds); // Adjust map to fit all locations
+
+    // Optional: Update center and zoom state
+    const newCenter = bounds.getCenter();
+    setCenter({ lat: newCenter.lat(), lng: newCenter.lng() });
+
+    const currentZoom = map.getZoom();
+    if (currentZoom) setZoom(currentZoom);
+  };
 
   const generateIcon = (rating: number) => {
     if (!googleMapsLoaded) return null; // Return null until the library is loaded
@@ -81,7 +115,8 @@ export default function MapsPage() {
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         center={center}
-        zoom={12}
+        zoom={zoom}
+        onLoad={onMapLoad}
       >
         {googleMapsLoaded &&
           locations.map((location) => (
