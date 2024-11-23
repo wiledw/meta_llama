@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { HomeIcon, BookmarkIcon, MapIcon } from "lucide-react";
+import { HomeIcon, BookmarkIcon, MapIcon, AlignLeftIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,35 +32,64 @@ export function NavBar() {
     <nav className="border-b px-4 py-2">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Left Side */}
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <Button variant="ghost" size="icon">
-              <HomeIcon className="h-5 w-5" />
-            </Button>
-          </Link>
-          {user && (
-            <>
-              <Link href="/saved">
+        <div className="flex items-center gap-4 w-1/3">
+          {/* Mobile Menu */}
+          <div className="md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  <BookmarkIcon className="h-5 w-5" />
+                  <AlignLeftIcon className="h-5 w-5" />
                 </Button>
-              </Link>
-              <Link href="/itinerary">
-                <Button variant="ghost" size="icon">
-                  <MapIcon className="h-5 w-5" />
-                </Button>
-              </Link>
-            </>
-          )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem asChild>
+                  <Link href="/">Home</Link>
+                </DropdownMenuItem>
+                {user && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/saved">Saved Places</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/itinerary">Itinerary</Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center gap-4">
+            <Link href="/">
+              <Button variant="ghost" size="icon">
+                <HomeIcon className="h-5 w-5" />
+              </Button>
+            </Link>
+            {user && (
+              <>
+                <Link href="/saved">
+                  <Button variant="ghost" size="icon">
+                    <BookmarkIcon className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href="/itinerary">
+                  <Button variant="ghost" size="icon">
+                    <MapIcon className="h-5 w-5" />
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Middle */}
-        <div className={`text-xl font-bold ${user ? "pr-36" : ""}`}>
-          TravelApp
+        <div className="flex-1 text-center w-1/3">
+          <span className="text-xl font-bold">TravelApp</span>
         </div>
 
         {/* Right Side */}
-        <div>
+        <div className="w-1/3 flex justify-end">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
