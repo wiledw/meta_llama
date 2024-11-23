@@ -1,4 +1,9 @@
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 
 export function FeaturesSection() {
   return (
@@ -7,7 +12,8 @@ export function FeaturesSection() {
         <CardHeader>
           <CardTitle>Plan Your Trip</CardTitle>
           <CardDescription>
-            Create detailed itineraries and organize your travel plans efficiently
+            Create detailed itineraries and organize your travel plans
+            efficiently
           </CardDescription>
         </CardHeader>
       </Card>
@@ -21,6 +27,14 @@ export function FeaturesSection() {
         </CardHeader>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Generate Itineraries</CardTitle>
+          <CardDescription>
+            Share your travel plans with friends and family
+          </CardDescription>
+        </CardHeader>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>Generate Itineraries</CardTitle>
