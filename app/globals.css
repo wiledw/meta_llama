@@ -4,7 +4,12 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  overflow-y: hidden;
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  position: fixed;
 }
 
 @layer base {
@@ -74,4 +79,12 @@ body {
 
 .gm-style-iw button {
   display: none !important;
+}
+
+#root-layout {
+  height: 100vh;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: fixed;
 }

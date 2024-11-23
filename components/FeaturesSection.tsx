@@ -35,14 +35,6 @@ export function FeaturesSection() {
           </CardDescription>
         </CardHeader>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Generate Itineraries</CardTitle>
-          <CardDescription>
-            Share your travel plans with friends and family
-          </CardDescription>
-        </CardHeader>
-      </Card>
     </section>
   );
 }

@@ -31,9 +31,11 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <NavBar />
+        <div id="root-layout">
         <Suspense fallback={<div>Loading...</div>}>
           {children}
-        </Suspense>
+          </Suspense>
+        </div>
       </body>
     </html>
   );
