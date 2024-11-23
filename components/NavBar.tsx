@@ -1,18 +1,18 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Button } from './ui/button'
-import { HomeIcon, BookmarkIcon, MapIcon } from 'lucide-react'
+import Link from "next/link";
+import { Button } from "./ui/button";
+import { HomeIcon, BookmarkIcon, MapIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu'
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
-import { signout } from '@/lib/auth-actions'
+} from "./ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { signout } from "@/lib/auth-actions";
 import { createClient } from "@/utils/supabase/client";
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 
 export function NavBar() {
   const [user, setUser] = useState<any>(null);
@@ -20,7 +20,9 @@ export function NavBar() {
   useEffect(() => {
     // Initial fetch
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
     };
     fetchUser();
@@ -53,7 +55,7 @@ export function NavBar() {
         </div>
 
         {/* Middle */}
-        <div className={`text-xl font-bold ${user ? 'pr-36' : ''}`}>
+        <div className={`text-xl font-bold ${user ? "pr-36" : ""}`}>
           TravelApp
         </div>
 
@@ -62,15 +64,27 @@ export function NavBar() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-8 w-8 rounded-full"
+                >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.user_metadata.avatar_url} alt={user.email} />
-                    <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                    <AvatarImage
+                      src={user.user_metadata.avatar_url}
+                      alt={user.email}
+                    />
+                    <AvatarFallback>
+                      {user.email?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => {signout();}}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    signout();
+                  }}
+                >
                   Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -83,5 +97,5 @@ export function NavBar() {
         </div>
       </div>
     </nav>
-  )
+  );
 }
