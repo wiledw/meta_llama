@@ -85,7 +85,7 @@ export function NavBar() {
 
         {/* Middle */}
         <div className="flex-1 text-center w-1/3">
-          <span className="text-xl font-bold">TravelApp</span>
+          <span className="text-xl font-bold">Localist</span>
         </div>
 
         {/* Right Side */}
