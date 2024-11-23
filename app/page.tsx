@@ -1,13 +1,15 @@
 'use client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Paperclip, X } from "lucide-react";
+import { Upload, Paperclip, X, MapIcon, LayoutGridIcon } from "lucide-react";
 import { WelcomeSection } from "@/components/WelcomeSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { useState } from 'react';
 import Image from 'next/image';
 import { Card } from "@/components/ui/card";
 import StarRating from "@/components/ui/StarRating";
+import { GoogleMapView, type LocationData } from "@/components/ui/GoogleMapView";
+import { usePlaces } from '@/contexts/PlacesContext';
 
 interface Place {
   image: string;
@@ -27,9 +29,10 @@ export default function Home() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [prompt, setPrompt] = useState<string>('');
+  const { places, setPlaces } = usePlaces();
+  const [viewMode, setViewMode] = useState<'cards' | 'map'>('cards');
 
   // Add this dummy data near the top of the file
-  const [places, setPlaces] = useState<Place[] | null>(null);
   const DUMMY_PLACES: Place[] = [
     {
       image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a",
@@ -42,24 +45,44 @@ export default function Home() {
       coordinates: { lat: 48.8584, lng: 2.2945 }
     },
     {
-      image: "https://images.unsplash.com/photo-1555921015-5532091f6026",
-      name: "Colosseum",
-      shortDescription: "Ancient amphitheater in the heart of Rome",
-      longDescription: "The Colosseum is an oval amphitheatre in the centre of the city of Rome, Italy. It is the largest ancient amphitheatre ever built, and is still the largest standing amphitheatre in the world today.",
-      rating: 4.8,
-      reviews: 128456,
-      address: "Piazza del Colosseo, 1, 00184 Roma RM, Italy",
-      coordinates: { lat: 41.8902, lng: 12.4922 }
+      image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94",
+      name: "Arc de Triomphe",
+      shortDescription: "Historic monument at the center of Place Charles de Gaulle",
+      longDescription: "The Arc de Triomphe honours those who fought and died for France in various wars. It stands at the western end of the Champs-Élysées at the center of Place Charles de Gaulle.",
+      rating: 4.7,
+      reviews: 89234,
+      address: "Place Charles de Gaulle, 75008 Paris, France",
+      coordinates: { lat: 48.8738, lng: 2.2950 }
     },
     {
-      image: "https://images.unsplash.com/photo-1555921015-5532091f6026",
-      name: "Taj Mahal",
-      shortDescription: "Magnificent marble mausoleum in Agra",
-      longDescription: "The Taj Mahal is an ivory-white marble mausoleum on the right bank of the river Yamuna in Agra, India. It was commissioned in 1632 by the Mughal emperor Shah Jahan to house the tomb of his favorite wife, Mumtaz Mahal.",
-      rating: 4.9,
-      reviews: 98765,
-      address: "Dharmapuri, Forest Colony, Tajganj, Agra, Uttar Pradesh 282001, India",
-      coordinates: { lat: 27.1751, lng: 78.0421 }
+      image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94",
+      name: "Trocadéro Gardens",
+      shortDescription: "Beautiful gardens offering the best views of the Eiffel Tower",
+      longDescription: "The Trocadéro Gardens are formal gardens with fountains and sculptures, offering stunning views of the Eiffel Tower across the Seine River.",
+      rating: 4.5,
+      reviews: 45678,
+      address: "Place du Trocadéro et du 11 Novembre, 75016 Paris, France",
+      coordinates: { lat: 48.8616, lng: 2.2893 }
+    },
+    {
+      image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94",
+      name: "Champ de Mars",
+      shortDescription: "Large public greenspace extending from the Eiffel Tower",
+      longDescription: "The Champ de Mars is a large public greenspace in Paris, located between the Eiffel Tower and the École Militaire. It's perfect for picnics with Tower views.",
+      rating: 4.6,
+      reviews: 67890,
+      address: "2 Allée Adrienne Lecouvreur, 75007 Paris, France",
+      coordinates: { lat: 48.8548, lng: 2.2985 }
+    },
+    {
+      image: "https://images.unsplash.com/photo-1581262208435-41726149a759",
+      name: "Musée du Quai Branly",
+      shortDescription: "Museum featuring indigenous art and cultures",
+      longDescription: "The Musée du Quai Branly - Jacques Chirac features indigenous art, cultures and civilizations from Africa, Asia, Oceania, and the Americas.",
+      rating: 4.4,
+      reviews: 34567,
+      address: "37 Quai Branly, 75007 Paris, France",
+      coordinates: { lat: 48.8608, lng: 2.2973 }
     }
   ];
 
@@ -136,38 +159,81 @@ export default function Home() {
     // }
   };
 
+  const locationsData: LocationData[] = places?.map(place => ({
+    name: place.name,
+    latitude: place.coordinates.lat,
+    longitude: place.coordinates.lng,
+    rating: place.rating
+  })) || [];
+
+  const toggleView = () => {
+    setViewMode(prev => prev === 'cards' ? 'map' : 'cards');
+  };
+
   return (
     <main className="min-h-screen w-full flex flex-col relative">
-      {/* Scrollable Cards Section */}
-      <div className="flex-1 overflow-y-auto pb-32">
+      <div className="flex-1 overflow-y-auto pb-44">
         {places ? (
-          <section className="w-full max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 md:pt-8">
-            {places.map((place, index) => (
-              <Card key={index} className="overflow-hidden">
-                <div className="relative h-48 w-full">
-                  <Image
-                    src={place.image}
-                    alt={place.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="p-4 space-y-2">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold">{place.name}</h3>
-                    <div className="flex flex-col items-end">
-                      <StarRating rating={place.rating} size={16} />
-                      <span className="text-sm text-gray-500">
-                        {place.reviews} reviews
-                      </span>
+          <>
+            <div className="w-full max-w-6xl mx-auto px-4 flex justify-end mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleView}
+                className="flex items-center gap-2"
+              >
+                {viewMode === 'cards' ? (
+                  <>
+                    <MapIcon className="h-4 w-4" />
+                    Show Map
+                  </>
+                ) : (
+                  <>
+                    <LayoutGridIcon className="h-4 w-4" />
+                    Show Cards
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {viewMode === 'cards' ? (
+              <section className="w-full max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 md:pt-8">
+                {places.map((place, index) => (
+                  <Card key={index} className="overflow-hidden">
+                    <div className="relative h-48 w-full">
+                      <Image
+                        src={place.image}
+                        alt={place.name}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
-                  </div>
-                  <p className="text-sm text-gray-600">{place.shortDescription}</p>
-                  <p className="text-sm text-gray-500">{place.address}</p>
-                </div>
-              </Card>
-            ))}
-          </section>
+                    <div className="p-4 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-lg font-semibold">{place.name}</h3>
+                        <div className="flex flex-col items-end">
+                          <StarRating rating={place.rating} size={16} />
+                          <span className="text-sm text-gray-500">
+                            {place.reviews} reviews
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-600">{place.shortDescription}</p>
+                      <p className="text-sm text-gray-500">{place.address}</p>
+                    </div>
+                  </Card>
+                ))}
+              </section>
+            ) : (
+              <section className="w-full max-w-6xl mx-auto px-4 mt-4">
+                <GoogleMapView
+                  locations={locationsData}
+                  apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+                  className="w-full h-[700px] rounded-lg"
+                />
+              </section>
+            )}
+          </>
         ) : (
           <>
             <WelcomeSection />
@@ -177,7 +243,7 @@ export default function Home() {
       </div>
 
       {/* Fixed Prompt Section */}
-      <section className="fixed bottom-0 left-0 right-0 bg-white border-t">
+      <section className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-10">
         <div className="w-full max-w-3xl mx-auto px-4 py-4">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2 bg-gray-100 p-4 rounded-lg">
