@@ -1,4 +1,5 @@
-import React from "react";
+"use client"
+import React, { CSSProperties } from "react";
 
 type StarRatingProps = {
   rating: number; // The numeric rating (e.g., 4.7)
@@ -11,7 +12,7 @@ const StarRating: React.FC<StarRatingProps> = ({
   maxStars = 5,
   size = 20,
 }) => {
-  const starStyle = {
+  const starStyle: CSSProperties = {
     width: size,
     height: size,
     display: "inline-block",
