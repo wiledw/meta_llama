@@ -2,7 +2,7 @@
 
 import {
   GoogleMap,
-  LoadScript,
+  useJsApiLoader,
   Marker,
   InfoWindow,
 } from "@react-google-maps/api";
@@ -64,10 +64,14 @@ const locations: Location[] = [
 const customPinPath = "M0,-48 C12,-48 12,-24 0,0 C-12,-24 -12,-48 0,-48 Z";
 
 export default function MapsPage() {
-  const [center, setCenter] = useState({ lat: 0, lng: 0 }); // Initial center
-  const [zoom, setZoom] = useState(12); // Initial zoom level
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+  });
+
+  const [center, setCenter] = useState({ lat: 0, lng: 0 });
+  const [zoom, setZoom] = useState(12);
   const mapRef = useRef<google.maps.Map | null>(null);
-  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const [hoveredLocation, setHoveredLocation] = useState<Location | null>(null);
 
   const onMapLoad = (map: google.maps.Map) => {
@@ -93,7 +97,7 @@ export default function MapsPage() {
   };
 
   const generateIcon = (rating: number): google.maps.Symbol | null => {
-    if (!googleMapsLoaded) return null;
+    if (!isLoaded) return null;
     const size = 0.15 + rating * 0.24; // Scale size based on rating
     const color = rating >= 4.8 ? "green" : rating >= 4.5 ? "blue" : "red"; // Dynamic color
     return {
@@ -108,47 +112,45 @@ export default function MapsPage() {
   };
 
   return (
-    <LoadScript
-      googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
-      onLoad={() => setGoogleMapsLoaded(true)} // Set state when library is loaded
-    >
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        center={center}
-        zoom={zoom}
-        onLoad={onMapLoad}
-      >
-        {googleMapsLoaded &&
-          locations.map((location) => (
+    <>
+      {isLoaded && (
+        <GoogleMap
+          mapContainerStyle={mapContainerStyle}
+          center={center}
+          zoom={zoom}
+          onLoad={onMapLoad}
+        >
+          {locations.map((location) => (
             <Marker
               key={location.id}
               position={{ lat: location.latitude, lng: location.longitude }}
-              icon={generateIcon(location.rating) as google.maps.Symbol}              // Cast icon to correct type
-              onMouseOver={() => setHoveredLocation(location)} // Hover starts here
-              onMouseOut={() => setHoveredLocation(null)} // Hover ends here
+              icon={generateIcon(location.rating) as google.maps.Symbol}
+              onMouseOver={() => setHoveredLocation(location)}
+              onMouseOut={() => setHoveredLocation(null)}
             />
           ))}
 
-        {hoveredLocation && (
-          <InfoWindow
-            position={{
-              lat: hoveredLocation.latitude,
-              lng: hoveredLocation.longitude,
-            }}
-            options={{
-              pixelOffset: new google.maps.Size(0, -48), // Align box above teardrop
-              disableAutoPan: true, // Prevent automatic map panning
-            }}
-          >
-            <div style={{ padding: "5px", textAlign: "center" }}>
-              <h4 style={{ margin: 0, fontSize: "medium" }}>
-                {hoveredLocation.name}
-              </h4>
-              <StarRating rating={hoveredLocation.rating} size={16} />
-            </div>
-          </InfoWindow>
-        )}
-      </GoogleMap>
-    </LoadScript>
+          {hoveredLocation && (
+            <InfoWindow
+              position={{
+                lat: hoveredLocation.latitude,
+                lng: hoveredLocation.longitude,
+              }}
+              options={{
+                pixelOffset: new google.maps.Size(0, -48),
+                disableAutoPan: true,
+              }}
+            >
+              <div style={{ padding: "5px", textAlign: "center" }}>
+                <h4 style={{ margin: 0, fontSize: "medium" }}>
+                  {hoveredLocation.name}
+                </h4>
+                <StarRating rating={hoveredLocation.rating} size={16} />
+              </div>
+            </InfoWindow>
+          )}
+        </GoogleMap>
+      )}
+    </>
   );
 }
