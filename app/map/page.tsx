@@ -92,8 +92,8 @@ export default function MapsPage() {
     if (currentZoom) setZoom(currentZoom);
   };
 
-  const generateIcon = (rating: number) => {
-    if (!googleMapsLoaded) return null; // Return null until the library is loaded
+  const generateIcon = (rating: number): google.maps.Symbol | null => {
+    if (!googleMapsLoaded) return null;
     const size = 0.15 + rating * 0.24; // Scale size based on rating
     const color = rating >= 4.8 ? "green" : rating >= 4.5 ? "blue" : "red"; // Dynamic color
     return {
@@ -123,7 +123,7 @@ export default function MapsPage() {
             <Marker
               key={location.id}
               position={{ lat: location.latitude, lng: location.longitude }}
-              icon={generateIcon(location.rating)} // Apply only the teardrop icon
+              icon={generateIcon(location.rating) as google.maps.Symbol}              // Cast icon to correct type
               onMouseOver={() => setHoveredLocation(location)} // Hover starts here
               onMouseOut={() => setHoveredLocation(null)} // Hover ends here
             />
