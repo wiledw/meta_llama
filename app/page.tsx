@@ -1,7 +1,7 @@
 'use client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Paperclip, Camera, X } from "lucide-react";
+import { Upload, Paperclip, X } from "lucide-react";
 import { WelcomeSection } from "@/components/WelcomeSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { useState } from 'react';
