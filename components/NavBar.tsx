@@ -24,7 +24,7 @@ export function NavBar() {
       setUser(user);
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
 
   return (
     <nav className="border-b px-4 py-2">

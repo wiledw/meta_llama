@@ -12,7 +12,7 @@ const LogoutPage = () => {
         } else {
             setTimeout(() => router.push("/login"), 2000);
         }
-    }, []);
+    }, [router, searchParams]);
 
     return <div>You have logged out... redirecting in a sec.</div>;
 };

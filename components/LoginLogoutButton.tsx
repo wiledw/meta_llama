@@ -17,7 +17,7 @@ const LoginButton = () => {
       setUser(user);
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
   if (user) {
     return (
       <Button
