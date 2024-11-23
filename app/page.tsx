@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Upload, Paperclip, Camera, X } from "lucide-react";
 import { WelcomeSection } from "@/components/WelcomeSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Image from 'next/image';
 
 export default function Home() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -37,27 +38,29 @@ export default function Home() {
   };
 
   const handleSubmit = async () => {
-    if (!imageFile) {
-      alert('Please select an image first');
+    // Check if either image or prompt is provided (not both required)
+    if (!imageFile && !prompt.trim()) {
+      alert('Please provide either an image or a prompt');
       return;
     }
 
-    if (!prompt.trim()) {
-      alert('Please enter a prompt');
-      return;
-    }
-
-    console.log(imageFile, prompt);
+    console.log({
+      hasImage: !!imageFile,
+      imageFile,
+      hasPrompt: !!prompt.trim(),
+      prompt
+    });
     console.log("Sending to VLM...");
+
+    // Create FormData only with the provided data
+    const formData = new FormData();
+    if (imageFile) formData.append('image', imageFile);
+    if (prompt.trim()) formData.append('prompt', prompt);
 
     // After successful submission
     clearForm();
 
     // try {
-    //   const formData = new FormData();
-    //   formData.append('image', imageFile);
-    //   formData.append('prompt', prompt);
-
     //   const response = await fetch('/api/your-vlm-endpoint', {
     //     method: 'POST',
     //     body: formData,
@@ -86,11 +89,15 @@ export default function Home() {
           <div className="flex flex-col gap-2 bg-gray-300/50 p-4 rounded-lg">
             {selectedImage && (
               <div className="flex items-center gap-2">
-                <img 
-                  src={selectedImage} 
-                  alt="Selected" 
-                  className="h-20 w-20 object-cover rounded"
-                />
+                <div className="relative h-20 w-20">
+                  <Image 
+                    src={selectedImage}
+                    alt="Selected"
+                    fill
+                    className="object-cover rounded"
+                    unoptimized
+                  />
+                </div>
                 <button 
                   onClick={clearForm}
                   className="p-1.5 hover:bg-gray-400 rounded-full bg-gray-300"
@@ -145,7 +152,7 @@ export default function Home() {
               <Button 
                 variant="ghost" 
                 onClick={handleSubmit}
-                disabled={!imageFile || !prompt.trim()}
+                disabled={!imageFile && !prompt.trim()}
               >
                 <Upload className="h-4 w-4" />
               </Button>
