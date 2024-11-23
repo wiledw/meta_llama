@@ -134,14 +134,6 @@ export default function Home() {
                 <Paperclip className="h-5 w-5" />
               </label>
 
-              <label 
-                htmlFor="camera-upload" 
-                className="cursor-pointer p-2 hover:bg-gray-400 rounded-md md:hidden"
-                title="Take Photo"
-              >
-                <Camera className="h-5 w-5" />
-              </label>
-
               <Input 
                 placeholder="Where would you like to go?" 
                 className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
