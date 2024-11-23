@@ -6,35 +6,38 @@ import {
 } from "@/components/ui/card";
 
 export function FeaturesSection() {
+  const features = [
+    {
+      title: "Plan Your Trip",
+      description: "Create detailed itineraries and organize your travel plans efficiently"
+    },
+    {
+      title: "Save Locations",
+      description: "Bookmark your favorite destinations and points of interest"
+    },
+    {
+      title: "Generate Itineraries",
+      description: "Share your travel plans with friends and family"
+    }
+  ];
+
   return (
-    <section className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl px-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Plan Your Trip</CardTitle>
-          <CardDescription>
-            Create detailed itineraries and organize your travel plans
-            efficiently
-          </CardDescription>
-        </CardHeader>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Save Locations</CardTitle>
-          <CardDescription>
-            Bookmark your favorite destinations and points of interest
-          </CardDescription>
-        </CardHeader>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Generate Itineraries</CardTitle>
-          <CardDescription>
-            Share your travel plans with friends and family
-          </CardDescription>
-        </CardHeader>
-      </Card>
+    <section className="w-full max-w-6xl px-4 flex justify-center pt-5">
+      <div className="relative w-full md:w-96 h-[200px]">
+        {features.map((feature, index) => (
+          <Card 
+            key={index} 
+            className={`feature-slide slide-${index + 1}`}
+          >
+            <CardHeader>
+              <CardTitle>{feature.title}</CardTitle>
+              <CardDescription>
+                {feature.description}
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
     </section>
   );
 }
