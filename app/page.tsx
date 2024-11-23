@@ -1,7 +1,7 @@
 'use client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Paperclip, Camera, X } from "lucide-react";
+import { Upload, Paperclip, X } from "lucide-react";
 import { WelcomeSection } from "@/components/WelcomeSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { useState } from 'react';
@@ -132,14 +132,6 @@ export default function Home() {
                 title="Upload Photo"
               >
                 <Paperclip className="h-5 w-5" />
-              </label>
-
-              <label 
-                htmlFor="camera-upload" 
-                className="cursor-pointer p-2 hover:bg-gray-400 rounded-md md:hidden"
-                title="Take Photo"
-              >
-                <Camera className="h-5 w-5" />
               </label>
 
               <Input 
