@@ -54,8 +54,7 @@ export default function Home() {
     }
   
     setIsLoading(true);
-    setPrompt('');
-    
+        
     try {
       const formData = new FormData();
       if (imageFile) formData.append('image', imageFile);
