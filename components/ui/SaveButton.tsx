@@ -94,7 +94,7 @@ export function SaveButton({ place }: SaveButtonProps) {
       if (!imageResponse.ok) throw new Error('Failed to fetch image');
       const imageBlob = await imageResponse.blob();
 
-      // Upload to storage with explicit content type
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { data: uploadData, error: uploadError } = await supabase
         .storage
         .from('Meta-Llama')
