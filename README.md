@@ -1,4 +1,4 @@
-# README
+# voya-travel
 ## Inspiration
 Since COVID, there has been a growing interest in travel, with an increasing demand for authentic local experiences. However, language barriers often restrict access to localized, language-specific information. At the same time, the rapid advancements in LLM models, particularly Llama, have opened up new possibilities for overcoming these challenges and enhancing the travel experience.
 ## What it does
