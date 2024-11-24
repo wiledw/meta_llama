@@ -52,37 +52,67 @@ export default function Home() {
       alert('Please provide either an image or a prompt');
       return;
     }
-  
+
     setIsLoading(true);
-        
+    setPrompt('');
+
     try {
       const formData = new FormData();
       if (imageFile) formData.append('image', imageFile);
       if (prompt.trim()) formData.append('prompt', prompt.trim());
-  
-      // Debug FormData contents
-      for (const pair of formData.entries()) {
-        console.log('Sending:', pair[0], pair[1]);
-      }
-  
-      const response = await fetch('/api/getIdeas', {
+
+      // First API call to get ideas
+      const ideasResponse = await fetch('/api/getIdeas', {
         method: 'POST',
         body: formData,
       });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      console.log('API Response:', data);
 
-      if (data.place_details) {
-        const formattedPlaces = Object.values(data.place_details).map((place: any) => ({
+      if (!ideasResponse.ok) {
+        throw new Error(`HTTP error! status: ${ideasResponse.status}`);
+      }
+
+      const ideasData = await ideasResponse.json();
+
+      // Get details for each place
+      const placeNames = Object.values(ideasData.place_details || {})
+        .map((place: any) => place.name);
+
+      const detailsResults = await Promise.all(
+        placeNames.map(async (placeName) => {
+          const response = await fetch('/api/getPlaceDetails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ placeName }),
+          });
+
+          if (!response.ok) return null;
+          return response.json();
+        })
+      );
+
+       // Create a copy of ideasData to modify
+      const modifiedData = { ...ideasData };
+
+      // Loop through the details and add them to the corresponding places
+      Object.keys(modifiedData.place_details).forEach((key, index) => {
+        const details = detailsResults[index];
+        if (details) {
+          modifiedData.place_details[key] = {
+            ...modifiedData.place_details[key],
+            translated_description: details.description,
+            translated_review_summary: details.review_summary
+          };
+        }
+      });
+
+      if (modifiedData.place_details) {
+        const formattedPlaces = Object.values(modifiedData.place_details).map((place: any) => ({
           image: place.googleMapPhotoUri,
           name: place.name,
           shortDescription: place.short_description,
-          longDescription: place.reviews[0] || place.short_description,
+          longDescription: place.translated_description || place.short_description,
           rating: place.globalRating,
           reviews: place.reviews.length,
           address: place.address,
@@ -96,17 +126,13 @@ export default function Home() {
         }));
 
         setPlaces(formattedPlaces);
-        console.log('Places set:', formattedPlaces);
-      } else {
-        console.error('Unexpected response format:', data);
-        alert('Received invalid data format from server');
       }
 
       clearForm();
 
     } catch (error) {
       console.error('Fetch Error:', error);
-      alert('Failed to process request. Please try again. Check console for details.');
+      alert('Failed to process request. Please try again.');
     } finally {
       setIsLoading(false);
     }
