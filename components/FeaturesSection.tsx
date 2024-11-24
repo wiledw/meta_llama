@@ -22,8 +22,8 @@ export function FeaturesSection() {
   ];
 
   return (
-    <section className="w-full max-w-6xl px-4 flex justify-center pt-5">
-      <div className="relative w-full md:w-96 h-[200px]">
+    <section className="w-full max-w-6xl mx-auto px-4 flex justify-center items-center pt-5">
+      <div className="relative w-full md:w-96 h-[200px] lg:max-w-[500px] xl:max-w-[600px] mx-auto">
         {features.map((feature, index) => (
           <Card 
             key={index} 
