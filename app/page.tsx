@@ -62,7 +62,7 @@ export default function Home() {
       if (prompt.trim()) formData.append('prompt', prompt.trim());
   
       // Debug FormData contents
-      for (let pair of formData.entries()) {
+      for (const pair of formData.entries()) {
         console.log('Sending:', pair[0], pair[1]);
       }
   
