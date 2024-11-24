@@ -110,6 +110,39 @@ const TransportIcon = ({ description }: { description: string }) => {
   return <MapPin className="w-4 h-4 text-red-500" />;
 };
 
+// Add this helper function to format the description
+const formatDescription = (description: string, places: Place[]) => {
+  const placeNames = places.map(place => place.name);
+  
+  // Create a regex pattern from place names, escaping special characters
+  const pattern = placeNames
+    .map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
+  
+  if (!pattern) return description;
+  
+  const regex = new RegExp(`(${pattern})`, 'g');
+  const parts = description.split(regex);
+
+  return (
+    <span>
+      {parts.map((part, index) => {
+        if (placeNames.includes(part)) {
+          return (
+            <strong 
+              key={index}
+              className="font-semibold text-blue-700"
+            >
+              {part}
+            </strong>
+          );
+        }
+        return part;
+      })}
+    </span>
+  );
+};
+
 export default function ItineraryPage() {
   const [itineraries, setItineraries] = useState<Itinerary[]>([]);
   const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(null);
@@ -223,26 +256,6 @@ export default function ItineraryPage() {
       </div>
     );
   }
-
-  // Helper function to format date
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  // Helper function for short date format
-  const formatShortDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
 
   // Helper function to get formatted date for weather
   const getFormattedDate = (dateString: string) => {
@@ -401,7 +414,9 @@ export default function ItineraryPage() {
                         ? 'bg-orange-50 border-orange-100' 
                         : 'bg-blue-50 border-blue-100'
                     }`}>
-                      <p>{item.Description}</p>
+                      <p>
+                        {formatDescription(item.Description, selectedItinerary.places)}
+                      </p>
                     </Card>
                   </div>
                 </div>
