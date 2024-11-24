@@ -14,6 +14,9 @@ interface Place {
     lat: number;
     lng: number;
   };
+  websiteUri?: string;
+  translated_description?: string;
+  translated_review_summary?: string;
 }
 
 interface PlacesContextType {
@@ -33,7 +36,14 @@ export function PlacesProvider({ children }: { children: React.ReactNode }) {
     try {
       const savedPlaces = localStorage.getItem('places');
       if (savedPlaces) {
-        setPlaces(JSON.parse(savedPlaces));
+        const parsedPlaces = JSON.parse(savedPlaces);
+        const validatedPlaces = parsedPlaces.map((place: Place) => ({
+          ...place,
+          websiteUri: place.websiteUri || undefined,
+          translated_description: place.translated_description || undefined,
+          translated_review_summary: place.translated_review_summary || undefined
+        }));
+        setPlaces(validatedPlaces);
       }
     } catch (error) {
       console.error('Error loading places from localStorage:', error);

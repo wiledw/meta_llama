@@ -1,7 +1,7 @@
 'use client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Paperclip, X, MapIcon, LayoutGridIcon } from "lucide-react";
+import { Upload, Paperclip, X, MapIcon, LayoutGridIcon, Loader2 } from "lucide-react";
 import { WelcomeSection } from "@/components/WelcomeSection";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { useState } from 'react';
@@ -13,19 +13,6 @@ import { usePlaces } from '@/contexts/PlacesContext';
 import { SaveButton } from "@/components/ui/SaveButton";
 import Link from 'next/link';
 
-interface Place {
-  image: string;
-  name: string;
-  shortDescription: string;
-  longDescription: string;
-  rating: number;
-  reviews: number;
-  address: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-}
 
 export default function Home() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -33,61 +20,7 @@ export default function Home() {
   const [prompt, setPrompt] = useState<string>('');
   const { places, setPlaces } = usePlaces();
   const [viewMode, setViewMode] = useState<'cards' | 'map'>('cards');
-
-  // Add this dummy data near the top of the file
-  const DUMMY_PLACES: Place[] = [
-    {
-      image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94",
-      name: "Eiffel Tower",
-      shortDescription: "Iconic iron lattice tower on the Champ de Mars in Paris",
-      longDescription: "The Eiffel Tower is a wrought-iron lattice tower located on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower.",
-      rating: 4.7,
-      reviews: 145789,
-      address: "Champ de Mars, 5 Avenue Anatole France, 75007 Paris, France",
-      coordinates: { lat: 48.8584, lng: 2.2945 }
-    },
-    {
-      image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94",
-      name: "Arc de Triomphe",
-      shortDescription: "Historic monument at the center of Place Charles de Gaulle",
-      longDescription: "The Arc de Triomphe honours those who fought and died for France in various wars. It stands at the western end of the Champs-Élysées at the center of Place Charles de Gaulle.",
-      rating: 4.7,
-      reviews: 89234,
-      address: "Place Charles de Gaulle, 75008 Paris, France",
-      coordinates: { lat: 48.8738, lng: 2.2950 }
-    },
-    {
-      image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94",
-      name: "Trocadéro Gardens",
-      shortDescription: "Beautiful gardens offering the best views of the Eiffel Tower",
-      longDescription: "The Trocadéro Gardens are formal gardens with fountains and sculptures, offering stunning views of the Eiffel Tower across the Seine River.",
-      rating: 4.5,
-      reviews: 45678,
-      address: "Place du Trocadéro et du 11 Novembre, 75016 Paris, France",
-      coordinates: { lat: 48.8616, lng: 2.2893 }
-    },
-    {
-      image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94",
-      name: "Champ de Mars",
-      shortDescription: "Large public greenspace extending from the Eiffel Tower",
-      longDescription: "The Champ de Mars is a large public greenspace in Paris, located between the Eiffel Tower and the École Militaire. It's perfect for picnics with Tower views.",
-      rating: 4.6,
-      reviews: 67890,
-      address: "2 Allée Adrienne Lecouvreur, 75007 Paris, France",
-      coordinates: { lat: 48.8548, lng: 2.2985 }
-    },
-    {
-      image: "https://images.unsplash.com/photo-1581262208435-41726149a759",
-      name: "Musée du Quai Branly",
-      shortDescription: "Museum featuring indigenous art and cultures",
-      longDescription: "The Musée du Quai Branly - Jacques Chirac features indigenous art, cultures and civilizations from Africa, Asia, Oceania, and the Americas.",
-      rating: 4.4,
-      reviews: 34567,
-      address: "37 Quai Branly, 75007 Paris, France",
-      coordinates: { lat: 48.8608, lng: 2.2973 }
-    }
-  ];
-
+  const [isLoading, setIsLoading] = useState(false);
 
   const clearForm = () => {
     setSelectedImage(null);
@@ -115,50 +48,94 @@ export default function Home() {
   };
 
   const handleSubmit = async () => {
-    // Check if either image or prompt is provided (not both required)
     if (!imageFile && !prompt.trim()) {
       alert('Please provide either an image or a prompt');
       return;
     }
 
-    console.log({
-      hasImage: !!imageFile,
-      imageFile,
-      hasPrompt: !!prompt.trim(),
-      prompt
-    });
-    console.log("Sending to VLM...");
+    setIsLoading(true);
+    setPrompt('');
 
-    // Create FormData only with the provided data
-    const formData = new FormData();
-    if (imageFile) formData.append('image', imageFile);
-    if (prompt.trim()) formData.append('prompt', prompt);
+    try {
+      const formData = new FormData();
+      if (imageFile) formData.append('image', imageFile);
+      if (prompt.trim()) formData.append('prompt', prompt.trim());
 
-    // After successful submission
-    // Simulate API call
-    console.log("Simulating API call...");
-    setTimeout(() => {
-      setPlaces(DUMMY_PLACES);
-    }, 1000);
-    clearForm();
+      // First API call to get ideas
+      const ideasResponse = await fetch('/api/getIdeas', {
+        method: 'POST',
+        body: formData,
+      });
 
-    // try {
-    //   const response = await fetch('/api/your-vlm-endpoint', {
-    //     method: 'POST',
-    //     body: formData,
-    //   });
+      if (!ideasResponse.ok) {
+        throw new Error(`HTTP error! status: ${ideasResponse.status}`);
+      }
 
-    //   if (!response.ok) {
-    //     throw new Error('Failed to process request');
-    //   }
+      const ideasData = await ideasResponse.json();
 
-    //   const result = await response.json();
-    //   console.log('VLM Response:', result);
+      // Get details for each place
+      const placeNames = Object.values(ideasData.place_details || {})
+        .map((place: any) => place.name);
 
-    // } catch (error) {
-    //   console.error('Error:', error);
-    //   alert('Failed to process request');
-    // }
+      const detailsResults = await Promise.all(
+        placeNames.map(async (placeName) => {
+          const response = await fetch('/api/getPlaceDetails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ placeName }),
+          });
+
+          if (!response.ok) return null;
+          return response.json();
+        })
+      );
+
+       // Create a copy of ideasData to modify
+      const modifiedData = { ...ideasData };
+
+      // Loop through the details and add them to the corresponding places
+      Object.keys(modifiedData.place_details).forEach((key, index) => {
+        const details = detailsResults[index];
+        if (details) {
+          modifiedData.place_details[key] = {
+            ...modifiedData.place_details[key],
+            translated_description: details.description,
+            translated_review_summary: details.review_summary
+          };
+        }
+      });
+
+      if (modifiedData.place_details) {
+        const formattedPlaces = Object.values(modifiedData.place_details).map((place: any) => ({
+          image: place.googleMapPhotoUri,
+          name: place.name,
+          shortDescription: place.short_description,
+          longDescription: place.translated_description || place.short_description,
+          rating: place.globalRating,
+          reviews: place.reviews.length,
+          address: place.address,
+          coordinates: {
+            lat: place.location.latitude,
+            lng: place.location.longitude
+          },
+          websiteUri: place.websiteUri,
+          translated_description: place.translated_description,
+          translated_review_summary: place.translated_review_summary
+        }));
+
+        setPlaces(formattedPlaces);
+      }
+
+      clearForm();
+
+    } catch (error) {
+      console.error('Fetch Error:', error);
+      alert('Failed to process request. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const locationsData: LocationData[] = places?.map(place => ({
@@ -174,6 +151,15 @@ export default function Home() {
 
   return (
     <main className="min-h-screen w-full flex flex-col relative">
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg flex items-center gap-3">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+            <span className="text-lg font-medium">Finding places...</span>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto pb-44">
         {places ? (
           <>
@@ -226,9 +212,6 @@ export default function Home() {
                             <h3 className="text-lg font-semibold">{place.name}</h3>
                             <div className="flex flex-col items-end">
                               <StarRating rating={place.rating} size={16} />
-                              <span className="text-sm text-gray-500">
-                                {place.reviews} reviews
-                              </span>
                             </div>
                           </div>
                           <p className="text-sm text-gray-600">{place.shortDescription}</p>
@@ -322,9 +305,14 @@ export default function Home() {
                 <Button 
                   variant="ghost" 
                   onClick={handleSubmit}
-                  disabled={!imageFile && !prompt.trim()}
+                  disabled={(!imageFile && !prompt.trim()) || isLoading}
+                  className="relative"
                 >
-                  <Upload className="h-4 w-4" />
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>
