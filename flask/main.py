@@ -4,7 +4,6 @@ import traceback
 from io import BytesIO
 from dotenv import load_dotenv
 from flask import Flask, render_template, make_response, send_file, request, jsonify
-from gcloud_storage import *
 from helper import *
 app = Flask(__name__)
 
@@ -38,34 +37,6 @@ def test():
         "timestamp": datetime.datetime.now().isoformat(),
         "status": "ok",
     }
-
-@app.route('/upload', methods=['POST'])
-def upload():
-    # Retrieve form fields (text data)
-    description = request.form.get('prompt')
-    upload = False
-
-    # Retrieve file
-    if 'image' in request.files:
-        image = request.files['image']
-        # Ensure a file was selected
-        if image.filename:
-            upload_blob_in_memory(BUCKET_NAME, image, image.filename)
-            upload = True
-
-    return {
-        "message": "File uploaded successfully",
-        "description": description,
-        "upload": upload
-    }
-
-@app.route("/download")
-def download():
-    image_blob = download_blob_into_memory(BUCKET_NAME, SOURCE_BLOB_NAME)
-    image_io = BytesIO(image_blob)
-    response = make_response(send_file(image_io, mimetype='image/jpeg'))
-    response.headers['Content-Disposition'] = 'inline; filename=image.jpg'
-    return response
 
 @app.route("/get_ideas", methods=['POST'])
 def get_ideas():

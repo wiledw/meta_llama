@@ -483,7 +483,7 @@ def get_travel_ideas(user_prompt_, enc_image=None):
         {json.dumps(name_address_description, indent=4)}
         
         Give name_address_description triple, get only the name that are relevant to the user prompt
-        Return a python list of the name.
+        Return a python list of the name. Remember to use double quotes to encapsulate each name string.
         Return only a python list without spacing.   
          
     """
@@ -505,6 +505,7 @@ def get_travel_ideas(user_prompt_, enc_image=None):
 
 def get_description_and_reviews(restaurant):
     global vector_index, place_details, user_prompt, user_language
+    print(f"user language: {user_language}")
     print("SAVED:", user_prompt, user_language)
 
     data = place_details[restaurant]
@@ -550,6 +551,3 @@ def get_description_and_reviews(restaurant):
     print('\n---\n')
 
     return description, review_summary
-
-
-
