@@ -89,6 +89,19 @@ def get_ideas():
         error_stack = traceback.format_exc()
         return make_response(jsonify({"error": str(e), "stack_trace": error_stack}), 500)
 
+@app.route("/get_detail", methods=['POST'])
+def get_detail():
+    place = request.form.get('place')
+    try:
+        description, review_summary = get_description_and_reviews(place)
+        return {
+            "description": description,
+            "review_summary": review_summary
+        }
+    except Exception as e:
+        error_stack = traceback.format_exc()
+        return make_response(jsonify({"error": str(e), "stack_trace": error_stack}), 500)
+
 
 if __name__ == "__main__":
     # This is used when running locally only. When deploying to Google App

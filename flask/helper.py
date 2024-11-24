@@ -52,9 +52,14 @@ storage_context = StorageContext.from_defaults(vector_store=vector_store)
 vector_index: None|VectorStoreIndex = None
 
 
+place_details = {}
+user_prompt = ""
+user_language = ""
 
-def get_travel_ideas(user_prompt, enc_image=None):
-    global vector_index
+
+def get_travel_ideas(user_prompt_, enc_image=None):
+    global vector_index, place_details, user_prompt, user_language
+    user_prompt = user_prompt_
     '''LLM PART 1'''
     # %% md
     # ## 1. Provide travel idea along with destination
@@ -310,7 +315,7 @@ def get_travel_ideas(user_prompt, enc_image=None):
     # %% md
     # # Part 2: Get place details by Google Map
     # %%
-    extracted_places = list(res_set)[:6]
+    extracted_places = list(res_set)[:10]
     print("EXTRACTED PLACES:")
     for place in extracted_places:
         print(place)
@@ -498,22 +503,19 @@ def get_travel_ideas(user_prompt, enc_image=None):
 
     return final_place_detail
 
+def get_description_and_reviews(restaurant):
+    global vector_index, place_details, user_prompt, user_language
+    print("SAVED:", user_prompt, user_language)
 
-def save_results(place_details):
-    with open("place_details.json", "w") as file:
-        json.dump(place_details, file, indent=4, ensure_ascii=False)
+    data = place_details[restaurant]
+    print("DATA:")
+    print(data)
 
-def load_results():
-    with open("place_details.json", "r") as file:
-        place_details = json.load(file)
-    return place_details
-
-def get_description_and_reviews(restaurant, data, user_prompt, user_language):
     if vector_index is None:
         raise ValueError("Vector index is not initialized. Please run get_travel_ideas first.")
 
-    place_details = load_results()
-
+    retriever = vector_index.as_retriever(similarity_top_k=2)
+    query_engine = RetrieverQueryEngine(retriever=retriever)
 
     # %%
 
@@ -547,7 +549,7 @@ def get_description_and_reviews(restaurant, data, user_prompt, user_language):
     print(review_summary)
     print('\n---\n')
 
-    return short_description, description, review_summary
+    return description, review_summary
 
 
 
