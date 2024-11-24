@@ -12,9 +12,9 @@ const LogoutPage = () => {
     
     useEffect(() => {
         if (searchParams.get('refresh') === 'true') {
-            window.location.href = '/login';  // Force full page refresh
+            window.location.href = '/';  
         } else {
-            setTimeout(() => router.push("/login"), 2000);
+            setTimeout(() => router.push("/"), 2000);
         }
         setPlaces(null);
     }, [router, searchParams, setPlaces]);
