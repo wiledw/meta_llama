@@ -1,5 +1,6 @@
 import base64
 import datetime
+import traceback
 from io import BytesIO
 from dotenv import load_dotenv
 from flask import Flask, render_template, make_response, send_file, request, jsonify
@@ -76,7 +77,8 @@ def get_ideas():
     else:
         encoded_image = None
 
-    print(description, encoded_image)
+    print(description)
+    print(encoded_image)
     try:
         place_details, place_photos = get_travel_ideas(description, encoded_image)
         return {
@@ -85,7 +87,8 @@ def get_ideas():
 
         }
     except Exception as e:
-        return make_response(jsonify({"error": str(e)}), 500)
+        error_stack = traceback.format_exc()
+        return make_response(jsonify({"error": str(e), "stack_trace": error_stack}), 500)
 
 
 if __name__ == "__main__":
