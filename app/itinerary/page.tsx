@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 
 interface ItineraryItem {
   time: string;
@@ -105,17 +106,17 @@ export default function ItineraryPage() {
         </h2>
         <section className="w-full max-w-4xl mx-auto mt-8 px-4">
           {itinerary.map((item, index) => (
-            <div key={index} className="mb-6 flex items-start gap-4">
+            <div key={index} className="mb-6 flex flex-col md:flex-row items-start gap-4">
               {/* Timestamp */}
-              <div className="w-24 text-lg font-semibold text-gray-600 flex items-start">
+              <div className="w-full md:w-24 text-lg font-semibold text-gray-600">
                 <span className="mt-2">{item.time}</span>
               </div>
 
               {/* Itinerary Content */}
-              <div className="flex-1">
+              <div className="flex-1 w-full">
                 {/* Transportation Details */}
                 {item.transportation && (
-                  <div className="mb-2 p-2 bg-black-50 text-black-700 text-sm rounded">
+                  <div className="mb-2 p-2 bg-gray-50 text-gray-700 text-sm rounded">
                     <p>
                       <strong>Method:</strong> {item.transportation.method}
                     </p>
@@ -129,18 +130,21 @@ export default function ItineraryPage() {
                 )}
 
                 {/* Location Card */}
-                <div className="bg-white shadow rounded-lg overflow-hidden flex">
+                <div className="bg-white shadow rounded-lg overflow-hidden flex flex-col md:flex-row">
                   {/* Image Section */}
-                  <div className="w-1/3">
-                    <img
+                  <div className="relative w-full md:w-1/3 aspect-[16/9] md:aspect-[4/3]">
+                    <Image
                       src={item.location.image}
                       alt={item.location.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+                      priority={index === 0}
                     />
                   </div>
 
                   {/* Text Section */}
-                  <div className="w-2/3 p-4 flex flex-col">
+                  <div className="w-full md:w-2/3 p-4 flex flex-col">
                     <h3 className="text-lg font-bold">{item.location.name}</h3>
                     <p className="text-sm text-gray-600">
                       {item.location.description}
@@ -156,7 +160,7 @@ export default function ItineraryPage() {
       {/* Fixed Prompt Section */}
       <section className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-10">
         <div className="w-full max-w-3xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <input
               type="text"
               placeholder="Describe changes to the itinerary..."
@@ -167,7 +171,7 @@ export default function ItineraryPage() {
             <button
               onClick={handleRegenerate}
               disabled={!prompt.trim()}
-              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-black-600 disabled:opacity-50"
+              className="bg-black text-white px-4 py-3 rounded-lg hover:bg-black-600 disabled:opacity-50 whitespace-nowrap"
             >
               Send
             </button>
