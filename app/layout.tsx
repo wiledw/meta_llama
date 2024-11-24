@@ -4,6 +4,7 @@ import { NavBar } from '@/components/NavBar'
 import "./globals.css";
 import { Suspense } from 'react';
 import { PlacesProvider } from '@/contexts/PlacesContext';
+import { Toaster } from "@/components/ui/toaster"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -39,6 +40,7 @@ export default async function RootLayout({
             </Suspense>
           </div>
         </PlacesProvider>
+        <Toaster />
       </body>
     </html>
   );

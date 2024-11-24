@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import StarRating from "@/components/ui/StarRating";
 import { GoogleMapView, type LocationData } from "@/components/ui/GoogleMapView";
 import { usePlaces } from '@/contexts/PlacesContext';
+import { SaveButton } from "@/components/ui/SaveButton";
 
 interface Place {
   image: string;
@@ -35,7 +36,7 @@ export default function Home() {
   // Add this dummy data near the top of the file
   const DUMMY_PLACES: Place[] = [
     {
-      image: "https://images.unsplash.com/photo-1499856871958-5b9627545d1a",
+      image: "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94",
       name: "Eiffel Tower",
       shortDescription: "Iconic iron lattice tower on the Champ de Mars in Paris",
       longDescription: "The Eiffel Tower is a wrought-iron lattice tower located on the Champ de Mars in Paris, France. It is named after the engineer Gustave Eiffel, whose company designed and built the tower.",
@@ -199,8 +200,12 @@ export default function Home() {
             {viewMode === 'cards' ? (
               <section className="w-full max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 md:pt-8">
                 {places.map((place, index) => (
-                  <Card key={index} className="overflow-hidden">
+                  <Card key={index} className="overflow-hidden relative group">
                     <div className="relative h-48 w-full">
+                      <div className="absolute top-2 right-2 z-10">
+                        <SaveButton place={place} />
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                       <Image
                         src={place.image}
                         alt={place.name}
