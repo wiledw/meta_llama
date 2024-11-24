@@ -99,7 +99,7 @@ export default function MapsPage() {
   const generateIcon = (rating: number): google.maps.Symbol | null => {
     if (!isLoaded) return null;
     const size = 0.15 + rating * 0.24; // Scale size based on rating
-    const color = rating >= 4.8 ? "green" : rating >= 4.5 ? "blue" : "red"; // Dynamic color
+    const color = rating >= 4 ? "green" : rating >= 3.5 ? "blue" : "red"; // Dynamic color
     return {
       path: customPinPath, // Use simplified teardrop path
       scale: size, // Scale dynamically

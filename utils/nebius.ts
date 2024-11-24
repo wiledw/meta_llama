@@ -8,16 +8,31 @@ const getAccessibilityInfo = async (placeName: string) => {
       },
       body: JSON.stringify({ placeName })
     });
-    console.log("Response:", response);
+    console.log("Response status:", response.status);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'API request failed');
+    // Check content type
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      console.error('Received non-JSON response:', await response.text());
+      throw new Error('Expected JSON response but got ' + contentType);
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API error response:', errorText);
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      console.error('Failed to parse JSON response:', jsonError);
+      throw new Error('Invalid JSON response');
+    }
     
     if (!data.choices?.[0]?.message?.content) {
+      console.error('Unexpected response structure:', data);
       throw new Error('Unexpected API response structure');
     }
 
@@ -26,6 +41,7 @@ const getAccessibilityInfo = async (placeName: string) => {
     // Extract JSON object from the response text
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
+      console.error('No JSON found in response:', responseText);
       throw new Error('No valid JSON found in response');
     }
 
@@ -47,6 +63,7 @@ const getAccessibilityInfo = async (placeName: string) => {
       );
 
       if (!hasAllKeys) {
+        console.error('Invalid data structure:', parsedData);
         throw new Error('Invalid data structure');
       }
 
