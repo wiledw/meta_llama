@@ -18,7 +18,11 @@ const nextConfig: NextConfig = {
         hostname: '*.unsplash.com',
         pathname: '/**',
       },
-      // Add more patterns as needed
+      {
+        protocol: 'https',
+        hostname: 'hdbqdbbzzmzcpxwcxhbu.supabase.co',
+        pathname: '/**',
+      },
     ],
   },
 };
