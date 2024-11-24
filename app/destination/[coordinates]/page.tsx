@@ -13,7 +13,7 @@ export default function DestinationPage() {
   const router = useRouter();
   const { places } = usePlaces();
   
-  const coordinates = decodeURIComponent(params.coordinates as string);
+  const coordinates = decodeURIComponent(params?.coordinates as string);
   const place = places?.find(p => 
     `${p.coordinates.lat},${p.coordinates.lng}` === coordinates
   );

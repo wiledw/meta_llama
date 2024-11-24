@@ -9,9 +9,8 @@ const LogoutPage = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { places, setPlaces } = usePlaces();
 
-    
     useEffect(() => {
-        if (searchParams.get('refresh') === 'true') {
+        if (searchParams?.get('refresh') === 'true') {
             window.location.href = '/';  
         } else {
             setTimeout(() => router.push("/"), 2000);

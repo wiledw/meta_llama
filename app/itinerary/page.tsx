@@ -1,7 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { AccessibilityIcons } from "@/components/ui/AccessibilityIcons";
+import { getAccessibilityInfo } from "@/utils/nebius";
+import { Loader2 } from "lucide-react";
+
+interface AccessibilityInfo {
+  "Physical Accessibility": boolean;
+  "Sensory Accessibility": boolean;
+  "Cognitive Accessibility": boolean;
+  "Inclusive Amenities": boolean;
+}
 
 interface ItineraryItem {
   time: string;
@@ -9,6 +19,7 @@ interface ItineraryItem {
     name: string;
     description: string;
     image: string;
+    accessibility?: AccessibilityInfo;
   };
   transportation: {
     method: string;
@@ -76,9 +87,48 @@ const DUMMY_ITINERARY: ItineraryItem[] = [
 ];
 
 export default function ItineraryPage() {
-  const [prompt, setPrompt] = useState<string>("");
-  //eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [itinerary, setItinerary] = useState<ItineraryItem[]>(DUMMY_ITINERARY);
+  const [isLoading, setIsLoading] = useState(true);
+  const [prompt, setPrompt] = useState<string>("");
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fetchAccessibilityInfo = async () => {
+      setIsLoading(true);
+      try {
+        const updatedItinerary = await Promise.all(
+          itinerary.map(async (item) => {
+            const accessibilityInfo = await getAccessibilityInfo(item.location.name);
+            return {
+              ...item,
+              location: {
+                ...item.location,
+                accessibility: accessibilityInfo || undefined
+              }
+            };
+          })
+        );
+        setItinerary(updatedItinerary);
+      } catch (error) {
+        console.error('Error fetching accessibility info:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAccessibilityInfo();
+  },[]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="text-sm text-gray-500">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleRegenerate = async () => {
     console.log("Regenerating itinerary with prompt:", prompt);
@@ -90,10 +140,11 @@ export default function ItineraryPage() {
     }, 1000);
   };
 
+
   return (
     <main className="min-h-screen w-full flex flex-col relative">
       <div className="flex-1 overflow-y-auto pb-32 md:pb-24 lg:pb-32">
-          <h1 className="text-center text-2xl font-bold mt-4">Your Itinerary</h1>
+        <h1 className="text-center text-2xl font-bold mt-4">Your Itinerary</h1>
         <h2 className="text-center text-lg text-gray-500 mt-2">
           {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString(
             "en-US",
@@ -114,24 +165,16 @@ export default function ItineraryPage() {
 
               {/* Itinerary Content */}
               <div className="flex-1 w-full">
-                {/* Transportation Details */}
                 {item.transportation && (
                   <div className="mb-2 p-2 bg-gray-50 text-gray-700 text-sm rounded">
-                    <p>
-                      <strong>Method:</strong> {item.transportation.method}
-                    </p>
-                    <p>
-                      <strong>Duration:</strong> {item.transportation.duration}
-                    </p>
-                    <p>
-                      <strong>Details:</strong> {item.transportation.details}
-                    </p>
+                    <p><strong>Method:</strong> {item.transportation.method}</p>
+                    <p><strong>Duration:</strong> {item.transportation.duration}</p>
+                    <p><strong>Details:</strong> {item.transportation.details}</p>
                   </div>
                 )}
 
                 {/* Location Card */}
                 <div className="bg-white shadow rounded-lg overflow-hidden flex flex-col md:flex-row">
-                  {/* Image Section */}
                   <div className="relative w-full md:w-1/3 aspect-[16/9] md:aspect-[4/3]">
                     <Image
                       src={item.location.image}
@@ -143,10 +186,18 @@ export default function ItineraryPage() {
                     />
                   </div>
 
-                  {/* Text Section */}
                   <div className="w-full md:w-2/3 p-4 flex flex-col">
-                    <h3 className="text-lg font-bold">{item.location.name}</h3>
-                    <p className="text-sm text-gray-600">
+                    <div className="flex justify-between items-start gap-2 mb-2">
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-bold">{item.location.name}</h3>
+                        {item.location.accessibility && (
+                          <AccessibilityIcons 
+                            accessibility={item.location.accessibility} 
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">
                       {item.location.description}
                     </p>
                   </div>
