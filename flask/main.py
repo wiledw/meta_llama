@@ -77,13 +77,15 @@ def get_ideas():
         encoded_image = None
 
     print(description, encoded_image)
-    place_details, place_photos = get_travel_ideas(description, encoded_image)
-    return {
-        "place_details": place_details,
-        # "place_photos": place_photos
+    try:
+        place_details, place_photos = get_travel_ideas(description, encoded_image)
+        return {
+            "place_details": place_details,
+            # "place_photos": place_photos
 
-    }
-
+        }
+    except Exception as e:
+        return make_response(jsonify({"error": str(e)}), 500)
 
 
 if __name__ == "__main__":
