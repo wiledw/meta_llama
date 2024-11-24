@@ -14,7 +14,11 @@
 
 runtime: python311
 
-service: meta_llama
+service: metallama3
+
+instance_class: F4_1G
+
+entrypoint: gunicorn -b :$PORT  --timeout 300 main:app
 
 handlers:
   # This configures Google App Engine to serve the files in the app's static
