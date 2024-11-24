@@ -79,7 +79,16 @@ const WeatherSummary: React.FC<WeatherProps> = ({ lat, lng, date }) => {
 
   return (
     <div className="text-center p-4 rounded-md">
-      <h3 className="text-lg font-semibold">Weather Forecast</h3>
+      <h2 className="text-center text-lg text-black-500 mt-2">
+        {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }
+        )}
+      </h2>
       <p className="text-sm text-gray-600">
         Max Temp: {weather.maxTemp}°C | Min Temp: {weather.minTemp}°C
       </p>
