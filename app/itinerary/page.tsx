@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from 'next/image';
 
 interface ItineraryItem {
   time: string;
@@ -92,8 +91,8 @@ export default function ItineraryPage() {
 
   return (
     <main className="min-h-screen w-full flex flex-col relative">
-      <div className="flex-1 overflow-y-auto pb-24">
-        <h1 className="text-center text-2xl font-bold mt-4">Your Itinerary</h1>
+      <div className="flex-1 overflow-y-auto pb-32 md:pb-24 lg:pb-32">
+          <h1 className="text-center text-2xl font-bold mt-4">Your Itinerary</h1>
         <h2 className="text-center text-lg text-gray-500 mt-2">
           {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString(
             "en-US",
@@ -132,14 +131,11 @@ export default function ItineraryPage() {
                 {/* Location Card */}
                 <div className="bg-white shadow rounded-lg overflow-hidden flex">
                   {/* Image Section */}
-                  <div className="w-1/3 relative aspect-[4/3]">
-                    <Image
+                  <div className="w-1/3">
+                    <img
                       src={item.location.image}
                       alt={item.location.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 33vw, 25vw"
-                      priority={index === 0}
+                      className="w-full h-full object-cover"
                     />
                   </div>
 
@@ -173,7 +169,7 @@ export default function ItineraryPage() {
               disabled={!prompt.trim()}
               className="bg-black text-white px-4 py-2 rounded-lg hover:bg-black-600 disabled:opacity-50"
             >
-              Re-plan-ify
+              Send
             </button>
           </div>
         </div>
