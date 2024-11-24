@@ -80,10 +80,9 @@ def get_ideas():
     print(description)
     print(encoded_image)
     try:
-        place_details, place_photos = get_travel_ideas(description, encoded_image)
+        place_details = get_travel_ideas(description, encoded_image)
         return {
             "place_details": place_details,
-            # "place_photos": place_photos
 
         }
     except Exception as e:
