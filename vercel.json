@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/getIdeas.ts": {
+      "maxDuration": 300
+    }
+  }
+} 
