@@ -55,6 +55,7 @@ const WeatherSummary: React.FC<WeatherProps> = ({ lat, lng, date }) => {
         } else {
           setError("Weather data not available for the selected date.");
         }
+        //eslint-disable-next-line
       } catch (error) {
         setError("Failed to fetch weather data.");
       }
