@@ -4,6 +4,8 @@ import traceback
 from io import BytesIO
 from dotenv import load_dotenv
 from flask import Flask, render_template, make_response, send_file, request, jsonify
+
+from generate_itinerary import get_itinerary_sub
 from helper import *
 app = Flask(__name__)
 
@@ -73,6 +75,18 @@ def get_detail():
         error_stack = traceback.format_exc()
         return make_response(jsonify({"error": str(e), "stack_trace": error_stack}), 500)
 
+@app.route("/get_itinerary", methods=['POST'])
+def get_itinerary():
+    raw_data = request.get_data()
+    data = json.loads(raw_data)
+    places = data.get('places')
+    print("PLACES: ", places)
+    try:
+        itinerary = get_itinerary_sub(places)
+        return itinerary
+    except Exception as e:
+        error_stack = traceback.format_exc()
+        return make_response(jsonify({"error": str(e), "stack_trace": error_stack}), 500)
 
 if __name__ == "__main__":
     # This is used when running locally only. When deploying to Google App

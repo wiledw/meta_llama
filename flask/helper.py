@@ -273,7 +273,9 @@ def get_travel_ideas(user_prompt_, enc_image=None):
     vector_store = FaissVectorStore(faiss_index=faiss_index)
     print("creating storage context")
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    print("before storing chunks")
     vector_index = VectorStoreIndex(chunks, storage_context=storage_context)
+    print("after storing chunks")
 
 
     # ## 3. Extract all recommended travel spots
