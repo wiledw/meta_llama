@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from 'next/image';
 
 interface ItineraryItem {
   time: string;
@@ -76,6 +77,7 @@ const DUMMY_ITINERARY: ItineraryItem[] = [
 
 export default function ItineraryPage() {
   const [prompt, setPrompt] = useState<string>("");
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [itinerary, setItinerary] = useState<ItineraryItem[]>(DUMMY_ITINERARY);
 
   const handleRegenerate = async () => {
@@ -130,11 +132,14 @@ export default function ItineraryPage() {
                 {/* Location Card */}
                 <div className="bg-white shadow rounded-lg overflow-hidden flex">
                   {/* Image Section */}
-                  <div className="w-1/3">
-                    <img
+                  <div className="w-1/3 relative aspect-[4/3]">
+                    <Image
                       src={item.location.image}
                       alt={item.location.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 33vw, 25vw"
+                      priority={index === 0}
                     />
                   </div>
 
