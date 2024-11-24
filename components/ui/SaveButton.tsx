@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { Button } from './button';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { createClient } from "@/utils/supabase/client";
-import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface SaveButtonProps {
   place: {
@@ -27,16 +27,47 @@ export function SaveButton({ place }: SaveButtonProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const supabase = createClient();
   const { toast } = useToast();
 
+  // Check authentication status when component mounts
+  useEffect(() => {
+    const checkAuth = async () => {
+        //eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { data: { user }, error } = await supabase.auth.getUser();
+            setIsAuthenticated(!!user);
+            setIsLoading(false);
+    };
+
+        checkAuth();
+        }, [supabase.auth]);
+
   // Check if place is already saved when component mounts
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const checkIfSaved = async () => {
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) return;
 
+        // First check if table has any entries for this user
+        const { count, error: countError } = await supabase
+          .from('savedplaces')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (countError) throw countError;
+        
+        // If no saved places exist, return early
+        if (count === 0) {
+          setIsSaved(false);
+          setIsLoading(false);
+          return;
+        }
+
+        // If table has entries, check for this specific place
         const { data, error } = await supabase
           .from('savedplaces')
           .select('id')
@@ -58,7 +89,7 @@ export function SaveButton({ place }: SaveButtonProps) {
     };
 
     checkIfSaved();
-  }, [place.name, supabase]);
+  }, [place.name, supabase, isAuthenticated]);
 
   const handleSave = async () => {
     try {
@@ -150,6 +181,11 @@ export function SaveButton({ place }: SaveButtonProps) {
       setIsSaving(false);
     }
   };
+
+  // If not authenticated or still loading, don't render anything
+  if (!isAuthenticated || isLoading) {
+    return null;
+ }
 
   return (
     <Button
