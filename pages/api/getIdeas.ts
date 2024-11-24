@@ -7,6 +7,7 @@ export const config = {
     bodyParser: false,
     responseLimit: false,
     externalResolver: true,
+    maxDuration: 300, 
   },
 };
 
