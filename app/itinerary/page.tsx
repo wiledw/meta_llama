@@ -5,6 +5,7 @@ import Image from "next/image";
 import { AccessibilityIcons } from "@/components/ui/AccessibilityIcons";
 import { getAccessibilityInfo } from "@/utils/nebius";
 import { Loader2 } from "lucide-react";
+import WeatherSummary from "./WeatherSummary";
 
 interface AccessibilityInfo {
   "Physical Accessibility": boolean;
@@ -98,26 +99,28 @@ export default function ItineraryPage() {
       try {
         const updatedItinerary = await Promise.all(
           itinerary.map(async (item) => {
-            const accessibilityInfo = await getAccessibilityInfo(item.location.name);
+            const accessibilityInfo = await getAccessibilityInfo(
+              item.location.name
+            );
             return {
               ...item,
               location: {
                 ...item.location,
-                accessibility: accessibilityInfo || undefined
-              }
+                accessibility: accessibilityInfo || undefined,
+              },
             };
           })
         );
         setItinerary(updatedItinerary);
       } catch (error) {
-        console.error('Error fetching accessibility info:', error);
+        console.error("Error fetching accessibility info:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchAccessibilityInfo();
-  },[]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -140,7 +143,6 @@ export default function ItineraryPage() {
     }, 1000);
   };
 
-
   return (
     <main className="min-h-screen w-full flex flex-col relative">
       <div className="flex-1 overflow-y-auto pb-32 md:pb-24 lg:pb-32">
@@ -150,14 +152,27 @@ export default function ItineraryPage() {
             "en-US",
             {
               year: "numeric",
-              month: "long",
+              month: "long", s
               day: "numeric",
             }
           )}
         </h2>
+        <WeatherSummary
+          lat={43.6426} // CN Tower coordinates
+          lng={-79.3871}
+          date={
+            new Date(Date.now() + 24 * 60 * 60 * 1000) // Tomorrow’s date
+              .toISOString()
+              .split("T")[0]
+          }
+        />
+        {/* CN Tower Coordinates */}
         <section className="w-full max-w-4xl mx-auto mt-8 px-4">
           {itinerary.map((item, index) => (
-            <div key={index} className="mb-6 flex flex-col md:flex-row items-start gap-4">
+            <div
+              key={index}
+              className="mb-6 flex flex-col md:flex-row items-start gap-4"
+            >
               {/* Timestamp */}
               <div className="w-full md:w-24 text-lg font-semibold text-gray-600">
                 <span className="mt-2">{item.time}</span>
@@ -167,9 +182,15 @@ export default function ItineraryPage() {
               <div className="flex-1 w-full">
                 {item.transportation && (
                   <div className="mb-2 p-2 bg-gray-50 text-gray-700 text-sm rounded">
-                    <p><strong>Method:</strong> {item.transportation.method}</p>
-                    <p><strong>Duration:</strong> {item.transportation.duration}</p>
-                    <p><strong>Details:</strong> {item.transportation.details}</p>
+                    <p>
+                      <strong>Method:</strong> {item.transportation.method}
+                    </p>
+                    <p>
+                      <strong>Duration:</strong> {item.transportation.duration}
+                    </p>
+                    <p>
+                      <strong>Details:</strong> {item.transportation.details}
+                    </p>
                   </div>
                 )}
 
@@ -189,10 +210,12 @@ export default function ItineraryPage() {
                   <div className="w-full md:w-2/3 p-4 flex flex-col">
                     <div className="flex justify-between items-start gap-2 mb-2">
                       <div className="space-y-1">
-                        <h3 className="text-lg font-bold">{item.location.name}</h3>
+                        <h3 className="text-lg font-bold">
+                          {item.location.name}
+                        </h3>
                         {item.location.accessibility && (
-                          <AccessibilityIcons 
-                            accessibility={item.location.accessibility} 
+                          <AccessibilityIcons
+                            accessibility={item.location.accessibility}
                           />
                         )}
                       </div>
