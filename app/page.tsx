@@ -11,6 +11,7 @@ import StarRating from "@/components/ui/StarRating";
 import { GoogleMapView, type LocationData } from "@/components/ui/GoogleMapView";
 import { usePlaces } from '@/contexts/PlacesContext';
 import { SaveButton } from "@/components/ui/SaveButton";
+import Link from 'next/link';
 
 interface Place {
   image: string;
@@ -199,35 +200,47 @@ export default function Home() {
 
             {viewMode === 'cards' ? (
               <section className="w-full max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4 md:pt-8">
-                {places.map((place, index) => (
-                  <Card key={index} className="overflow-hidden relative group">
-                    <div className="relative h-48 w-full">
-                      <div className="absolute top-2 right-2 z-10">
+                {places.map((place, index) => {
+                  const coordinatesParam = `${place.coordinates.lat},${place.coordinates.lng}`;
+                  
+                  return (
+                    <Card 
+                      key={index} 
+                      className="overflow-hidden relative group transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg"
+                    >
+                      <Link 
+                        href={`/destination/${encodeURIComponent(coordinatesParam)}`}
+                        className="block cursor-pointer"
+                      >
+                        <div className="relative h-48 w-full">
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                          <Image
+                            src={place.image}
+                            alt={place.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="p-4 space-y-2">
+                          <div className="flex justify-between items-start">
+                            <h3 className="text-lg font-semibold">{place.name}</h3>
+                            <div className="flex flex-col items-end">
+                              <StarRating rating={place.rating} size={16} />
+                              <span className="text-sm text-gray-500">
+                                {place.reviews} reviews
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600">{place.shortDescription}</p>
+                          <p className="text-sm text-gray-500">{place.address}</p>
+                        </div>
+                      </Link>
+                      <div className="absolute top-2 right-2 z-10" onClick={(e) => e.stopPropagation()}>
                         <SaveButton place={place} />
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-                      <Image
-                        src={place.image}
-                        alt={place.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-4 space-y-2">
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-lg font-semibold">{place.name}</h3>
-                        <div className="flex flex-col items-end">
-                          <StarRating rating={place.rating} size={16} />
-                          <span className="text-sm text-gray-500">
-                            {place.reviews} reviews
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-600">{place.shortDescription}</p>
-                      <p className="text-sm text-gray-500">{place.address}</p>
-                    </div>
-                  </Card>
-                ))}
+                    </Card>
+                  );
+                })}
               </section>
             ) : (
               <section className="w-full max-w-6xl mx-auto px-4 mt-4">
