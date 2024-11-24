@@ -1,6 +1,7 @@
 # voya-travel
 ## Inspiration
-Since COVID, there has been a growing interest in travel, with an increasing demand for authentic local experiences. However, language barriers often restrict access to localized, language-specific information. At the same time, the rapid advancements in LLM models, particularly Llama, have opened up new possibilities for overcoming these challenges and enhancing the travel experience.
+Traveling is exciting, but let’s be real—planning a trip can be annoying. Have you ever spent hours crafting the perfect itinerary, only for a single delay, cancelled flight or unexpected hiccup to throw it all off? Or maybe you’ve been stuck in a new city, unsure where to go or what to do next? Craving a real, authentic local experience rather than just stopping by the tourist attractions. That’s where Voya comes in."
+
 ## What it does
 Our platform enables users to input their queries, leveraging Llama and web search to generate tailored recommendations for spots that match their interests. The system focuses on uncovering hidden gems in the community, such as family-owned restaurants offering authentic local cuisine and local craft shops. It retrieves and summarizes reviews in the local language from Google Maps for each recommended spot, providing users with insights. Additionally, the platform generates a localized rating based on these reviews to help users identify and avoid tourist traps. Users can save their favorite recommendations, which can be used to create personalized itineraries with weather data from the Open-Meteo API and transportation data from the Google Directions API.
 ## Impacts:
