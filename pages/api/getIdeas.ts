@@ -1,21 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const maxDuration = 300; // 5 minutes
+export const dynamic = 'force-dynamic';
 export const runtime = 'edge';
 
-export const config = {
-  api: {
-    bodyParser: false,
-    responseLimit: false,
-    externalResolver: true,
-    maxDuration: 300, 
-  },
-};
-
-export default async function handler(req: NextRequest) {
-  if (req.method !== 'POST') {
-    return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
-  }
-
+export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const prompt = formData.get('prompt');
@@ -89,6 +78,7 @@ export default async function handler(req: NextRequest) {
         };
       }
     });
+    
     return NextResponse.json(modifiedData);
 
   } catch (error) {
