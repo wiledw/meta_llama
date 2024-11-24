@@ -17,7 +17,7 @@ const LogoutPage = () => {
             setTimeout(() => router.push("/login"), 2000);
         }
         setPlaces(null);
-    }, [router, searchParams]);
+    }, [router, searchParams, setPlaces]);
 
     return <div>You have logged out... redirecting in a sec.</div>;
 };
