@@ -147,16 +147,6 @@ export default function ItineraryPage() {
     <main className="min-h-screen w-full flex flex-col relative">
       <div className="flex-1 overflow-y-auto pb-32 md:pb-24 lg:pb-32">
         <h1 className="text-center text-2xl font-bold mt-4">Your Itinerary</h1>
-        <h2 className="text-center text-lg text-gray-500 mt-2">
-          {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString(
-            "en-US",
-            {
-              year: "numeric",
-              month: "long", 
-              day: "numeric",
-            }
-          )}
-        </h2>
         <WeatherSummary
           lat={43.6426} // CN Tower coordinates
           lng={-79.3871}
