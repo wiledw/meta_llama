@@ -1,257 +1,436 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
-import { AccessibilityIcons } from "@/components/ui/AccessibilityIcons";
-import { getAccessibilityInfo } from "@/utils/nebius";
-import { Loader2 } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Card } from "@/components/ui/card";
+import { 
+  Loader2, 
+  Calendar, 
+  ChevronRight,
+  Train,
+  Bus,
+  Plane,
+  Car,
+  PersonStanding,
+  MapPin,
+  Menu,
+  Trash2,
+  TrainFront,
+  TramFront,
+  Ship,
+  CarTaxiFront
+} from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import WeatherSummary from "./WeatherSummary";
 
-interface AccessibilityInfo {
-  "Physical Accessibility": boolean;
-  "Sensory Accessibility": boolean;
-  "Cognitive Accessibility": boolean;
-  "Inclusive Amenities": boolean;
-}
-
 interface ItineraryItem {
-  time: string;
-  location: {
-    name: string;
-    description: string;
-    image: string;
-    accessibility?: AccessibilityInfo;
-  };
-  transportation: {
-    method: string;
-    duration: string;
-    details: string;
-  } | null;
+  Description: string;
+  Timestamp: string;
+  transit: string;
 }
 
-const DUMMY_ITINERARY: ItineraryItem[] = [
-  {
-    time: "10:00 AM",
-    location: {
-      name: "Pearson Airport",
-      description: "Canada's most recognized airport.",
-      image:
-        "https://www.gatlinburg-attractions.com/content/uploads/smokies-aquarium-img02.jpg",
-    },
-    transportation: null, // First stop
-  },
-  {
-    time: "11:30 AM",
-    location: {
-      name: "Ripley's Aquarium of Canada",
-      description:
-        "A large aquarium featuring marine life from around the world.",
-      image:
-        "https://www.gatlinburg-attractions.com/content/uploads/smokies-aquarium-img02.jpg",
-    },
-    transportation: {
-      method: "Walking",
-      duration: "5 mins",
-      details: "From CN Tower to Ripley's Aquarium",
-    },
-  },
-  {
-    time: "1:00 PM",
-    location: {
-      name: "Distillery District",
-      description:
-        "A historic pedestrian-only district with galleries, restaurants, and shops.",
-      image:
-        "https://www.gatlinburg-attractions.com/content/uploads/smokies-aquarium-img02.jpg",
-    },
-    transportation: {
-      method: "Public Transit",
-      duration: "15 mins",
-      details: "Take the 504 Streetcar to Distillery District",
-    },
-  },
-  {
-    time: "3:00 PM",
-    location: {
-      name: "Royal Ontario Museum",
-      description:
-        "A world-renowned museum showcasing art, culture, and natural history.",
-      image:
-        "https://www.gatlinburg-attractions.com/content/uploads/smokies-aquarium-img02.jpg",
-    },
-    transportation: {
-      method: "Uber",
-      duration: "10 mins",
-      details: "From Distillery District to Royal Ontario Museum",
-    },
-  },
-];
+interface Place {
+  name: string;
+  latitude: number;
+  longitude: number;
+  // ... other place properties
+}
+
+interface Itinerary {
+  id: string;
+  created_at: string;
+  places: Place[];
+  itinerary: ItineraryItem[];
+}
+
+// Helper function to determine the transport icon
+const TransportIcon = ({ description }: { description: string }) => {
+  const desc = description.toLowerCase();
+  
+  // Walking
+  if (desc.includes('walk') || desc.includes('walking') || desc.includes('on foot')) {
+    return <PersonStanding className="w-4 h-4 text-blue-500" />;
+  }
+
+  // Train/Rail
+  if (desc.includes('train') || desc.includes('rail')) {
+    return <Train className="w-4 h-4 text-orange-500" />;
+  }
+
+  // Subway/Metro
+  if (desc.includes('subway') || desc.includes('metro') || desc.includes('transit')) {
+    return <TrainFront className="w-4 h-4 text-orange-500" />;
+  }
+
+  // Tram/Streetcar
+  if (desc.includes('tram') || desc.includes('streetcar') || desc.includes('take')) {
+    return <TramFront className="w-4 h-4 text-orange-500" />;
+  }
+
+  // Bus
+  if (desc.includes('bus') || desc.includes('shuttle')) {
+    return <Bus className="w-4 h-4 text-orange-500" />;
+  }
+
+  // Taxi/Uber/Lyft
+  if (desc.includes('taxi') || desc.includes('uber') || desc.includes('lyft') || desc.includes('cab')) {
+    return <CarTaxiFront className="w-4 h-4 text-yellow-500" />;
+  }
+
+  // Car/Drive
+  if (desc.includes('drive') || desc.includes('car')) {
+    return <Car className="w-4 h-4 text-green-500" />;
+  }
+
+  // Ferry/Boat
+  if (desc.includes('ferry') || desc.includes('boat') || desc.includes('ship')) {
+    return <Ship className="w-4 h-4 text-blue-500" />;
+  }
+
+  // Plane/Flight
+  if (desc.includes('plane') || desc.includes('flight') || desc.includes('airport')) {
+    return <Plane className="w-4 h-4 text-sky-500" />;
+  }
+
+  // Default location icon
+  if (desc.includes('Arrived') || desc.includes('arrived')) {
+    return <MapPin className="w-4 h-4 text-red-500" />;
+  }
+
+  return <MapPin className="w-4 h-4 text-red-500" />;
+};
 
 export default function ItineraryPage() {
-  const [itinerary, setItinerary] = useState<ItineraryItem[]>(DUMMY_ITINERARY);
+  const [itineraries, setItineraries] = useState<Itinerary[]>([]);
+  const [selectedItinerary, setSelectedItinerary] = useState<Itinerary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [prompt, setPrompt] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const supabase = createClient();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const fetchAccessibilityInfo = async () => {
-      setIsLoading(true);
+    const fetchItineraries = async () => {
       try {
-        const updatedItinerary = await Promise.all(
-          itinerary.map(async (item) => {
-            const accessibilityInfo = await getAccessibilityInfo(
-              item.location.name
-            );
-            return {
-              ...item,
-              location: {
-                ...item.location,
-                accessibility: accessibilityInfo || undefined,
-              },
-            };
-          })
-        );
-        setItinerary(updatedItinerary);
-      } catch (error) {
-        console.error("Error fetching accessibility info:", error);
+        setIsLoading(true);
+        setError(null);
+
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
+        if (!user) {
+          setError('Please log in to view your itineraries');
+          return;
+        }
+
+        const { data, error: fetchError } = await supabase
+          .from('itineraries')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (fetchError) throw fetchError;
+        setItineraries(data || []);
+        if (data && data.length > 0) {
+          setSelectedItinerary(data[0]); // Select the most recent itinerary by default
+        }
+
+      } catch (err) {
+        console.error('Error fetching itineraries:', err);
+        setError('Failed to load itineraries');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchAccessibilityInfo();
-  }, []);
+    fetchItineraries();
+  }, [supabase]);
+
+  const handleDeleteClick = (id: string) => {
+    setDeletingId(id);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingId) return;
+
+    try {
+      const { error } = await supabase
+        .from('itineraries')
+        .delete()
+        .eq('id', deletingId);
+
+      if (error) throw error;
+
+      // Update local state
+      setItineraries(itineraries.filter(item => item.id !== deletingId));
+      
+      // If we're deleting the selected itinerary, select the next available one
+      if (selectedItinerary?.id === deletingId) {
+        const nextItinerary = itineraries.find(item => item.id !== deletingId);
+        setSelectedItinerary(nextItinerary || null);
+      }
+
+      toast({
+        title: "Itinerary deleted",
+        description: "The itinerary has been successfully deleted.",
+      });
+
+    } catch (error) {
+      console.error('Error deleting itinerary:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete itinerary. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowDeleteDialog(false);
+      setDeletingId(null);
+    }
+  };
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <p className="text-sm text-gray-500">Loading...</p>
-        </div>
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
       </div>
     );
   }
 
-  const handleRegenerate = async () => {
-    console.log("Regenerating itinerary with prompt:", prompt);
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
-    // Simulate a regenerated itinerary
-    setTimeout(() => {
-      alert("Itinerary regenerated! (Simulated)");
-      setPrompt("");
-    }, 1000);
+  if (itineraries.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">No itineraries generated yet</p>
+      </div>
+    );
+  }
+
+  // Helper function to format date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Helper function for short date format
+  const formatShortDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  // Helper function to get formatted date for weather
+  const getFormattedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0]; // Returns "YYYY-MM-DD" format
   };
 
   return (
-    <main className="min-h-screen w-full flex flex-col relative">
-      <div className="flex-1 overflow-y-auto pb-32 md:pb-24 lg:pb-32">
-        <h1 className="text-center text-2xl font-bold mt-4">Your Itinerary</h1>
-        <h2 className="text-center text-lg text-gray-500 mt-2">
-          {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString(
-            "en-US",
-            {
-              year: "numeric",
-              month: "long", 
-              day: "numeric",
-            }
-          )}
-        </h2>
-        <WeatherSummary
-          lat={43.6426} // CN Tower coordinates
-          lng={-79.3871}
-          date={
-            new Date(Date.now() + 24 * 60 * 60 * 1000) // Tomorrow’s date
-              .toISOString()
-              .split("T")[0]
-          }
-        />
-        {/* CN Tower Coordinates */}
-        <section className="w-full max-w-4xl mx-auto mt-8 px-4">
-          {itinerary.map((item, index) => (
-            <div
-              key={index}
-              className="mb-6 flex flex-col md:flex-row items-start gap-4"
-            >
-              {/* Timestamp */}
-              <div className="w-full md:w-24 text-lg font-semibold text-gray-600">
-                <span className="mt-2">{item.time}</span>
-              </div>
-
-              {/* Itinerary Content */}
-              <div className="flex-1 w-full">
-                {item.transportation && (
-                  <div className="mb-2 p-2 bg-gray-50 text-gray-700 text-sm rounded">
-                    <p>
-                      <strong>Method:</strong> {item.transportation.method}
-                    </p>
-                    <p>
-                      <strong>Duration:</strong> {item.transportation.duration}
-                    </p>
-                    <p>
-                      <strong>Details:</strong> {item.transportation.details}
-                    </p>
-                  </div>
-                )}
-
-                {/* Location Card */}
-                <div className="bg-white shadow rounded-lg overflow-hidden flex flex-col md:flex-row">
-                  <div className="relative w-full md:w-1/3 aspect-[16/9] md:aspect-[4/3]">
-                    <Image
-                      src={item.location.image}
-                      alt={item.location.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-                      priority={index === 0}
-                    />
-                  </div>
-
-                  <div className="w-full md:w-2/3 p-4 flex flex-col">
-                    <div className="flex justify-between items-start gap-2 mb-2">
-                      <div className="space-y-1">
-                        <h3 className="text-lg font-bold">
-                          {item.location.name}
-                        </h3>
-                        {item.location.accessibility && (
-                          <AccessibilityIcons
-                            accessibility={item.location.accessibility}
-                          />
-                        )}
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                      {item.location.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </section>
+    <div className="min-h-screen flex flex-col md:flex-row relative">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b bg-white sticky top-0 z-20">
+        <h1 className="text-lg font-semibold">Your Itineraries</h1>
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 hover:bg-gray-100 rounded-lg"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
       </div>
 
-      {/* Fixed Prompt Section */}
-      <section className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-10">
-        <div className="w-full max-w-3xl mx-auto px-4 py-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-            <input
-              type="text"
-              placeholder="Describe changes to the itinerary..."
-              className="flex-1 p-3 border rounded-lg focus:ring focus:ring-black-500"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
-            <button
-              onClick={handleRegenerate}
-              disabled={!prompt.trim()}
-              className="bg-black text-white px-4 py-3 rounded-lg hover:bg-black-600 disabled:opacity-50 whitespace-nowrap"
-            >
-              Send
-            </button>
-          </div>
+      {/* Sidebar - Mobile Overlay */}
+      <div className={`
+        fixed inset-0 bg-black/50 z-30 transition-opacity duration-200
+        md:hidden
+        ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+      `} onClick={() => setIsSidebarOpen(false)} />
+
+      {/* Sidebar */}
+      <div className={`
+        fixed md:static inset-y-0 left-0 w-80 bg-gray-50 z-40
+        transform transition-transform duration-200 ease-in-out
+        md:transform-none overflow-y-auto
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="p-4 border-b bg-white sticky top-0">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Your Itineraries
+          </h2>
         </div>
-      </section>
-    </main>
+        <div className="divide-y max-h-[calc(100vh-4rem)] overflow-y-auto">
+          {itineraries.map((itinerary) => (
+            <div
+              key={itinerary.id}
+              className={`flex items-center justify-between p-4 hover:bg-gray-100 transition-colors ${
+                selectedItinerary?.id === itinerary.id ? 'bg-blue-50' : ''
+              }`}
+            >
+              <button
+                onClick={() => {
+                  setSelectedItinerary(itinerary);
+                  setIsSidebarOpen(false);
+                }}
+                className="flex-1 text-left"
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium">
+                      {itinerary.places.length} Places
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(itinerary.created_at).toLocaleDateString()}
+                    </p>
+                    
+                  </div>
+                  <ChevronRight className={`h-5 w-5 text-gray-400 transition-transform ${
+                    selectedItinerary?.id === itinerary.id ? 'rotate-90' : ''
+                  }`} />
+                </div>
+              </button>
+              
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick(itinerary.id);
+                }}
+                className="p-2 hover:bg-red-100 rounded-full ml-2 group"
+                title="Delete itinerary"
+              >
+                <Trash2 className="h-4 w-4 text-gray-400 group-hover:text-red-500" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main content area */}
+      <div className="flex-1 overflow-y-auto pb-20">
+        {selectedItinerary && (
+          <div className="max-w-3xl mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+            <div className="space-y-2">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h1 className="text-xl md:text-2xl font-bold">Your Itinerary</h1>
+                  <p className="text-sm text-gray-500">
+                    Generated on {new Date(selectedItinerary.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                {/* Add Weather Summary in header */}
+                {selectedItinerary.places.length > 0 && (
+                  <div className="mt-1">
+                    <WeatherSummary
+                      lat={selectedItinerary.places[0].latitude}
+                      lng={selectedItinerary.places[0].longitude}
+                      date={getFormattedDate(selectedItinerary.created_at)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Places included */}
+            <Card className="p-3 md:p-4">
+              <h2 className="font-semibold mb-2 text-sm md:text-base">Places Included:</h2>
+              <div className="flex flex-wrap gap-2">
+                {selectedItinerary.places.map((place, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs md:text-sm"
+                  >
+                    {place.name}
+                  </span>
+                ))}
+              </div>
+            </Card>
+
+            {/* Timeline */}
+            <div className="space-y-3 md:space-y-4">
+              {selectedItinerary.itinerary.map((item, index) => (
+                <div key={index} className="flex gap-2 md:gap-4">
+                  {/* Time */}
+                  <div className="w-16 md:w-20 text-right">
+                    <span className="text-xs md:text-sm font-medium text-gray-500">
+                      {item.Timestamp}
+                    </span>
+                  </div>
+
+                  {/* Icon and Connection Line */}
+                  <div className="relative flex flex-col items-center">
+                    <div className={`w-6 h-6 md:w-8 md:h-8 rounded-full ${
+                      item.transit === "True" 
+                        ? 'bg-orange-100' 
+                        : 'bg-blue-100'
+                    } flex items-center justify-center`}>
+                      <TransportIcon description={item.Description} />
+                    </div>
+                    {index < selectedItinerary.itinerary.length - 1 && (
+                      <div className="w-0.5 h-full bg-gray-200 absolute top-6 md:top-8" />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 pb-4 md:pb-6">
+                    <Card className={`p-3 md:p-4 text-sm md:text-base ${
+                      item.transit === "True" 
+                        ? 'bg-orange-50 border-orange-100' 
+                        : 'bg-blue-50 border-blue-100'
+                    }`}>
+                      <p>{item.Description}</p>
+                    </Card>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Itinerary</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this itinerary? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

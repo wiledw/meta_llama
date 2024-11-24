@@ -8,6 +8,7 @@ import StarRating from "@/components/ui/StarRating";
 import { createClient } from "@/utils/supabase/client";
 import { Loader2, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from 'next/navigation';
 
 import {
   AlertDialog,
@@ -42,6 +43,7 @@ export default function Saved() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const supabase = createClient();
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchSavedPlaces = async () => {
@@ -90,46 +92,54 @@ export default function Saved() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('User not authenticated');
 
-      // Store places before deletion for logging/confirmation
-      console.log('Generating itinerary for:', savedPlaces);
+      // Extract place names for the itinerary
+      const placeNames = savedPlaces.map(place => place.name);
       
-      // Simulate API delay for itinerary generation
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the itinerary API
+      const response = await fetch('/api/getItinerary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ places: placeNames }),
+      });
 
-      // 1. Delete all images from storage
-      for (const place of savedPlaces) {
-        const imageUrl = place.image_url;
-        const storagePathMatch = imageUrl.match(/Meta-Llama\/(.+)$/);
-        
-        if (storagePathMatch) {
-          const storagePath = storagePathMatch[1];
-          const { error: deleteStorageError } = await supabase
-            .storage
-            .from('Meta-Llama')
-            .remove([storagePath]);
-
-          if (deleteStorageError) {
-            console.error('Error deleting image:', deleteStorageError);
-          }
-        }
+      if (!response.ok) {
+        throw new Error('Failed to generate itinerary');
       }
 
-      // 2. Delete all saved places from the database
+      const itineraryData = await response.json();
+      
+      // Store itinerary in Supabase
+      const { error: itineraryError } = await supabase
+        .from('itineraries')
+        .insert({
+          user_id: user.id,
+          places: savedPlaces,
+          itinerary: itineraryData.itinerary,
+          created_at: new Date().toISOString(),
+        });
+
+      if (itineraryError) throw itineraryError;
+
       const { error: deleteError } = await supabase
-        .from('savedplaces')
-        .delete()
-        .eq('user_id', user.id);
+      .from('savedplaces')  
+      .delete()
+      .eq('user_id', user.id);
 
       if (deleteError) throw deleteError;
 
-      // 3. Clear local state
+      // Clear local state
       setSavedPlaces([]);
 
-      // 4. Show success message
+      // Show success message
       toast({
         title: "Itinerary Generated!",
-        description: "Your custom travel itinerary has been created and saved places have been cleared.",
+        description: "Your custom travel itinerary has been created. Redirecting to itinerary page...",
       });
+
+      // Redirect to itinerary page
+      router.push('/itinerary');
 
     } catch (error) {
       console.error('Error during itinerary generation:', error);
@@ -140,6 +150,7 @@ export default function Saved() {
       });
     } finally {
       setIsGenerating(false);
+      setShowConfirmDialog(false);
     }
   };
 
