@@ -4,7 +4,12 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  overflow-y: hidden;  
+  min-height: 100vh;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  position: fixed;
 }
 
 @layer base {
@@ -71,3 +76,89 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.gm-style-iw button {
+  display: none !important;
+}
+
+#root-layout {
+  height: 100vh;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: fixed;
+}
+
+@keyframes typewriter {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+.typewriter-1 {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typewriter 1s steps(8) forwards;
+}
+
+.typewriter-2 {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  animation: 
+    typewriter 1s steps(22) 1s forwards,
+    fadeIn 0s 1s forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1 }
+}
+
+@keyframes slideShow {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  3% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  33% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  36% {  
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.feature-slide {
+  position: absolute;
+  width: 100%;
+  opacity: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+}
+
+.slide-1 {
+  animation: slideShow 18s infinite;
+  animation-delay: 2s;
+}
+
+.slide-2 {
+  animation: slideShow 18s infinite;
+  animation-delay: 8s;
+}
+
+.slide-3 {
+  animation: slideShow 18s infinite;
+  animation-delay: 14s;
+}
+
