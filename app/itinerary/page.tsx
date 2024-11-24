@@ -152,7 +152,7 @@ export default function ItineraryPage() {
             "en-US",
             {
               year: "numeric",
-              month: "long", s
+              month: "long", 
               day: "numeric",
             }
           )}
