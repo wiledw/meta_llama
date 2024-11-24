@@ -421,7 +421,8 @@ def get_travel_ideas(user_prompt, enc_image=None):
         params = {
             "maxHeightPx": 400,
             "maxWidthPx": 400,
-            "key": GOOGLE_API_KEY
+            "key": GOOGLE_API_KEY,
+            "skipHttpRedirect": True
         }
         result = requests.get(url, params)
         if result.status_code != 200:
@@ -429,15 +430,14 @@ def get_travel_ideas(user_prompt, enc_image=None):
             print(result.text)
             return ""
         else:
-            return result.content
+            return result.json()
 
     # %%
-    place_photos = {}
-    for place_detail in place_details.values():
-        place_photos[place_detail['name']] = get_google_map_images(place_detail['googleMapPhoto'])
+    for name, place_detail in place_details.items():
+        place_details[name]["googleMapPhotoUri"] = get_google_map_images(place_detail['googleMapPhoto'])['photoUri']
         # display(Image(image))
 
-    save_results(place_details)
+    # save_results(place_details)
 
     # ## 4. Retrieve descriptions and reviews for every recommended spot
     # %%
@@ -488,17 +488,15 @@ def get_travel_ideas(user_prompt, enc_image=None):
     final_rests = ast.literal_eval(filtered_name)
 
     final_place_detail = {}
-    final_place_photos = {}
-    for final_rest in final_rests:
+    for final_rest in final_rests[:6]:
         if final_rest in place_details.keys():
             final_place_detail[final_rest] = place_details[final_rest]
             final_place_detail[final_rest]["short_description"] = short_desc_map[final_rest]
-            final_place_photos[final_rest] = place_photos[final_rest]
     print('\n-FINALLLLLL--\n')
     print(final_place_detail)
     print('\n---\n')
 
-    return final_place_detail, final_place_photos
+    return final_place_detail
 
 
 def save_results(place_details):
