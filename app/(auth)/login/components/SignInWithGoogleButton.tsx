@@ -6,6 +6,7 @@ import { usePlaces } from "@/contexts/PlacesContext";
 import React from "react";
 
 const SignInWithGoogleButton = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { places, setPlaces } = usePlaces();
 
   return (

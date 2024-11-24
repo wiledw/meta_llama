@@ -6,6 +6,7 @@ import { usePlaces } from "@/contexts/PlacesContext";
 const LogoutPage = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { places, setPlaces } = usePlaces();
 
     
